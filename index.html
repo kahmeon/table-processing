@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Table Display</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+    <h2 class="text-center">Table 1 - CSV Data</h2>
+    <table id="table1" class="table table-bordered table-striped">
+        <thead>
+            <tr id="table1-header"></tr>
+        </thead>
+        <tbody id="table1-body"></tbody>
+    </table>
+
+    <h2 class="text-center mt-4">Table 2 - Processed Values</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Alpha</td><td id="alpha"></td></tr>
+            <tr><td>Beta</td><td id="beta"></td></tr>
+            <tr><td>Charlie</td><td id="charlie"></td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("Table_Input.csv") 
+                .then(response => response.text())
+                .then(csvText => {
+                    Papa.parse(csvText, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function (results) {
+                            displayTable1(results.data);
+                            calculateTable2(results.data);
+                        }
+                    });
+                });
+        });
+
+        function displayTable1(data) {
+            const headerRow = document.getElementById("table1-header");
+            const body = document.getElementById("table1-body");
+            if (data.length === 0) return;
+
+            Object.keys(data[0]).forEach(col => {
+                let th = document.createElement("th");
+                th.textContent = col;
+                headerRow.appendChild(th);
+            });
+
+            data.forEach(row => {
+                let tr = document.createElement("tr");
+                Object.values(row).forEach(value => {
+                    let td = document.createElement("td");
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+        }
+
+        function calculateTable2(data) {
+            let A5 = parseFloat(data[4]?.Value || 0);
+            let A20 = parseFloat(data[19]?.Value || 0);
+            let A15 = parseFloat(data[14]?.Value || 1);
+            let A7 = parseFloat(data[6]?.Value || 1);
+            let A13 = parseFloat(data[12]?.Value || 1);
+            let A12 = parseFloat(data[11]?.Value || 1);
+
+            document.getElementById("alpha").textContent = A5 + A20;
+            document.getElementById("beta").textContent = (A7 !== 0) ? (A15 / A7).toFixed(2) : "Error";
+            document.getElementById("charlie").textContent = A13 * A12;
+        }
+    </script>
+</body>
+</html>
